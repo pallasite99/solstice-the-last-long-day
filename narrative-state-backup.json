@@ -1,0 +1,15 @@
+{
+  "simulationTime": "2026-06-20T16:26:03.583Z",
+  "resources": {
+    "energy": 58,
+    "water": 42,
+    "population": 80,
+    "knowledge": 20,
+    "timeLimit": 22.5
+  },
+  "empathyScore": 50,
+  "hemisphereShare": 50,
+  "dilemmaHistory": [],
+  "secretEndingTriggered": false,
+  "solvedPuzzles": []
+}

@@ -176,18 +176,29 @@ export default function App() {
     fetchGitStatus();
   }, []);
 
-  const triggerGitPush = async () => {
+  const triggerGitPush = async (customCommitMsg?: string, customPayload?: any) => {
     setIsPushingGit(true);
     setGitError(null);
     setGitPushLogs([`[${new Date().toLocaleTimeString()}] Triggering cloud environment deployment...`]);
     try {
+      const payload = customPayload || {
+        simulationTime: new Date().toISOString(),
+        resources,
+        empathyScore,
+        hemisphereShare: hemisphere.dayShare,
+        dilemmaHistory,
+        secretEndingTriggered,
+        solvedPuzzles: puzzles.filter(p => p.isSolved).map(p => p.cipherText)
+      };
+
       const r = await fetch("/api/git/push", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          commitMessage: gitCommitMsg,
+          commitMessage: customCommitMsg || gitCommitMsg,
           repoUrl: gitRepoUrl,
-          branch: gitBranch
+          branch: gitBranch,
+          statePayload: payload
         })
       });
       const data = await r.json();
@@ -206,6 +217,39 @@ export default function App() {
       setIsPushingGit(false);
     }
   };
+
+  // Threshold tracking for Empathy Auto-Backup (triggers on crossing multiples of 25)
+  const prevEmpathyBlockRef = useRef<number | null>(null);
+
+  useEffect(() => {
+    const currentBlock = Math.floor(empathyScore / 25);
+    if (prevEmpathyBlockRef.current === null) {
+      // Initialize on first mount
+      prevEmpathyBlockRef.current = currentBlock;
+      return;
+    }
+    
+    if (currentBlock !== prevEmpathyBlockRef.current) {
+      const threshold = Math.max(currentBlock, prevEmpathyBlockRef.current) * 25;
+      const crossingMsg = `Empathy Score has crossed the ${threshold}% significant threshold (Current Score: ${empathyScore}%).`;
+      
+      addLog(`🚨 NARRATIVE TRIGGER: ${crossingMsg} Initiating auto-backup sequence...`);
+      
+      const customCommitMsg = `Auto-Backup: Empathy crossed ${threshold}% threshold (Narrative Shift to ${empathyScore}%)`;
+      
+      triggerGitPush(customCommitMsg, {
+        simulationTime: new Date().toISOString(),
+        resources,
+        empathyScore,
+        hemisphereShare: hemisphere.dayShare,
+        dilemmaHistory,
+        secretEndingTriggered,
+        solvedPuzzles: puzzles.filter(p => p.isSolved).map(p => p.cipherText)
+      });
+      
+      prevEmpathyBlockRef.current = currentBlock;
+    }
+  }, [empathyScore]);
 
   // Emergency overlay and warning logic
   const [acknowledgedEmergency, setAcknowledgedEmergency] = useState<boolean>(false);
@@ -1669,7 +1713,7 @@ export default function App() {
                     </div>
 
                     <button
-                      onClick={triggerGitPush}
+                      onClick={() => triggerGitPush()}
                       disabled={isPushingGit}
                       className={`w-full font-mono text-xs font-bold uppercase tracking-wider py-3 rounded cursor-pointer transition-all flex items-center justify-center gap-2 shadow-md ${
                         isPushingGit 

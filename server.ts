@@ -355,7 +355,7 @@ app.get("/api/git/status", (req, res) => {
 });
 
 app.post("/api/git/push", (req, res) => {
-  const { commitMessage, repoUrl, branch } = req.body;
+  const { commitMessage, repoUrl, branch, statePayload } = req.body;
   const pat = process.env.GITHUB_PAT;
 
   repairGitIndexIfCorrupt();
@@ -385,6 +385,21 @@ app.post("/api/git/push", (req, res) => {
     addLogLocal("Configuring Git user identification...");
     execSync('git config user.name "AI Coding Agent"', { encoding: "utf-8" });
     execSync('git config user.email "salilapte99@gmail.com"', { encoding: "utf-8" });
+
+    // 1b. Write narrative-state-backup.json if payload is present
+    if (statePayload) {
+      addLogLocal("Writing serialized narrative state parameters to registry store...");
+      try {
+        fs.writeFileSync(
+          path.join(process.cwd(), "narrative-state-backup.json"),
+          JSON.stringify(statePayload, null, 2),
+          "utf-8"
+        );
+        addLogLocal("narrative-state-backup.json updated and stored in memory.");
+      } catch (err: any) {
+        addLogLocal(`Warning: Failed to write narrative state file: ${err.message}`);
+      }
+    }
 
     // 2. Add files
     addLogLocal("Executing staging queue: 'git add .'");
