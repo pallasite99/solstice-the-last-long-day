@@ -1,0 +1,8 @@
+{
+  "name": "Solstice: The Last Long Day",
+  "description": "An deep narrative-driven strategy simulation and interactive game design workbench for SOLSTICE: THE LAST LONG DAY. Interconnect Day Side and Night Side resources, manipulate time variables, solve Turing-inspired computational decryption puzzles, and engage in existential debates with TURING, the planetary AI.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
