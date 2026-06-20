@@ -1,15 +1,17 @@
 {
-  "simulationTime": "2026-06-20T16:26:03.583Z",
+  "simulationTime": "2026-06-20T16:29:27.072Z",
   "resources": {
-    "energy": 58,
-    "water": 42,
-    "population": 80,
-    "knowledge": 20,
-    "timeLimit": 22.5
+    "energy": 46,
+    "water": 79,
+    "population": 47,
+    "knowledge": 45,
+    "timeLimit": 0.1
   },
-  "empathyScore": 50,
+  "empathyScore": 40,
   "hemisphereShare": 50,
-  "dilemmaHistory": [],
+  "dilemmaHistory": [
+    "[DECISION: THE HALTING STATE] - Accepted: Run the optimization algorithm. Let the machine calculate the perfect solar vector, accepting the temporary threat to human life-support monitoring."
+  ],
   "secretEndingTriggered": false,
   "solvedPuzzles": []
 }

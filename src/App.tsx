@@ -28,7 +28,10 @@ import {
   X,
   BarChart3,
   GitBranch,
-  Github
+  Github,
+  Volume2,
+  VolumeX,
+  Play
 } from "lucide-react";
 import { 
   ResponsiveContainer, 
@@ -142,6 +145,40 @@ export default function App() {
   // Empathy and narrative state
   const [empathyScore, setEmpathyScore] = useState<number>(50);
   const [secretEndingTriggered, setSecretEndingTriggered] = useState<boolean>(false);
+
+  // --- Speech Synthesis State & Interface ---
+  const [isVoiceEnabled, setIsVoiceEnabled] = useState<boolean>(true);
+  const [voiceTone, setVoiceTone] = useState<"cold" | "empathetic">("cold");
+
+  const speakTuringText = (text: string) => {
+    if (!isVoiceEnabled || !window.speechSynthesis) return;
+    try {
+      window.speechSynthesis.cancel();
+      const cleanText = text
+        .replace(/[*_`#\-+]/g, " ")
+        .replace(/\[.*?\]/g, " ")
+        .replace(/\s+/g, " ")
+        .trim();
+
+      const utterance = new SpeechSynthesisUtterance(cleanText);
+      const voices = window.speechSynthesis.getVoices();
+      
+      if (voiceTone === "cold") {
+        const standardVoice = voices.find(v => v.lang.startsWith("en") && (v.name.includes("Male") || v.name.includes("David") || v.name.includes("Google US English")));
+        if (standardVoice) utterance.voice = standardVoice;
+        utterance.pitch = 0.55;
+        utterance.rate = 0.88;
+      } else {
+        const warmVoice = voices.find(v => v.lang.startsWith("en") && (v.name.includes("Female") || v.name.includes("Zira") || v.name.includes("Google UK English Female") || v.name.includes("Natural")));
+        if (warmVoice) utterance.voice = warmVoice;
+        utterance.pitch = 1.15;
+        utterance.rate = 1.0;
+      }
+      window.speechSynthesis.speak(utterance);
+    } catch (e) {
+      console.warn("Speech synthesis configuration error:", e);
+    }
+  };
 
   // --- Git Deployment State ---
   const [gitStatus, setGitStatus] = useState<{ hasPat: boolean; status: string; branch: string; filesCount: number } | null>(null);
@@ -620,6 +657,8 @@ export default function App() {
         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })
       }]);
 
+      speakTuringText(data.text);
+
       if (data.simulated) {
         addLog("TURING offline-emulation model backup synced successfully.");
       } else {
@@ -627,12 +666,14 @@ export default function App() {
       }
     } catch (err) {
       console.error(err);
+      const errMsg = "ERROR: Communication network packet loss. central TURING sub-node did not answer. Offline loop initialized.";
       setChatMessages(prev => [...prev, {
         id: String(Date.now() + 1),
         role: "model",
-        content: "ERROR: Communication network packet loss. central TURING sub-node did not answer. Offline loop initialized.",
+        content: errMsg,
         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })
       }]);
+      speakTuringText(errMsg);
     } finally {
       setIsSendingChat(false);
     }
